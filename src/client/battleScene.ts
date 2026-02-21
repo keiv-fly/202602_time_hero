@@ -8,6 +8,7 @@ const TILE = 14;
 export class BattleScene {
   private readonly app: Application;
   private readonly root = new Container();
+  private readonly worldLayer = new Container();
   private readonly backgroundLayer = new Container();
   private readonly tileLayer = new Container();
   private readonly entityLayer = new Container();
@@ -18,7 +19,8 @@ export class BattleScene {
   constructor(app: Application) {
     this.app = app;
     this.state = createBattleState();
-    this.root.addChild(this.backgroundLayer, this.tileLayer, this.entityLayer, this.uiLayer);
+    this.worldLayer.addChild(this.backgroundLayer, this.tileLayer, this.entityLayer);
+    this.root.addChild(this.worldLayer, this.uiLayer);
     this.app.stage.addChild(this.root);
     this.buildUI();
     this.render();
@@ -72,8 +74,10 @@ export class BattleScene {
 
     this.tileLayer.eventMode = 'static';
     this.tileLayer.on('pointertap', (e) => {
-      const x = Math.floor(e.global.x / TILE);
-      const y = Math.floor(e.global.y / TILE);
+      const local = e.getLocalPosition(this.worldLayer);
+      const x = Math.floor(local.x / TILE);
+      const y = Math.floor(local.y / TILE);
+      if (x < 0 || y < 0 || x >= this.state.map.width || y >= this.state.map.height) return;
       this.handleAction({ type: 'SelectTile', x, y });
     });
   }
@@ -99,6 +103,16 @@ export class BattleScene {
       this.entityLayer.addChild(new Graphics().rect(rat.pos.x * TILE + 2, rat.pos.y * TILE + 2, TILE - 4, TILE - 4).fill(0xff5555));
     }
 
+    this.updateCamera();
     this.hud.text = `Turn: ${this.state.turn} | Mode: ${this.state.mode} | HP ${this.state.hero.hp}/${this.state.hero.maxHp} | AP ${this.state.hero.ap} | Knife ${this.state.hero.knife.durability}`;
+  }
+
+  private updateCamera(): void {
+    const heroCenterX = (this.state.hero.topLeft.x + this.state.hero.size / 2) * TILE;
+    const heroCenterY = (this.state.hero.topLeft.y + this.state.hero.size / 2) * TILE;
+
+    const cameraX = this.app.screen.width / 2 - heroCenterX;
+    const cameraY = this.app.screen.height / 2 - heroCenterY;
+    this.worldLayer.position.set(Math.round(cameraX), Math.round(cameraY));
   }
 }
