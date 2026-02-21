@@ -3,8 +3,16 @@ import { BattleScene } from './client/battleScene';
 
 async function bootstrap(): Promise<void> {
   const app = new Application();
-  await app.init({ background: '#101722', width: 900, height: 600, antialias: false, resolution: window.devicePixelRatio || 1 });
+  await app.init({
+    background: '#101722',
+    antialias: false,
+    autoDensity: true,
+    resolution: window.devicePixelRatio || 1,
+    resizeTo: window,
+  });
+
   document.getElementById('app')?.appendChild(app.canvas);
+
   const scene = new BattleScene(app);
 
   window.addEventListener('keydown', (e) => {
@@ -12,6 +20,10 @@ async function bootstrap(): Promise<void> {
     if (e.key.toLowerCase() === 'm') scene.handleAction({ type: 'SetMode', mode: 'move' });
     if (e.key.toLowerCase() === 'a') scene.handleAction({ type: 'SetMode', mode: 'attack' });
     if (e.key.toLowerCase() === 'e') scene.handleAction({ type: 'EndTurn' });
+  });
+
+  window.addEventListener('resize', () => {
+    scene.handleViewportResize();
   });
 }
 

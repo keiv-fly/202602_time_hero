@@ -47,6 +47,10 @@ export class BattleScene {
     this.render();
   }
 
+  handleViewportResize(): void {
+    this.updateCamera();
+  }
+
   private buildUI(): void {
     this.hud.x = 8;
     this.hud.y = 8;
