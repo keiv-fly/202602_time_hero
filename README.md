@@ -38,3 +38,6 @@ npm run test
 ```bash
 npm run build
 ```
+
+## Automatically published to:
+https://keiv-fly.github.io/202602_time_hero/
