@@ -15,6 +15,7 @@ export class BattleScene {
   private readonly uiLayer = new Container();
   private state: BattleState;
   private hud = new Text({ text: '', style: { fill: 0xffffff, fontSize: 16 } });
+  private readonly actionButtons: Array<{ box: Graphics; label: Text }> = [];
 
   constructor(app: Application) {
     this.app = app;
@@ -49,6 +50,7 @@ export class BattleScene {
 
   handleViewportResize(): void {
     this.updateCamera();
+    this.layoutUI();
   }
 
   private buildUI(): void {
@@ -63,7 +65,9 @@ export class BattleScene {
     ];
 
     buttons.forEach((btn) => {
-      const g = new Graphics().roundRect(btn.x, 560, btn.label === 'End Turn' ? 100 : 64, 32, 8).fill(0x334455);
+      const width = btn.label === 'End Turn' ? 100 : 64;
+      const g = new Graphics().roundRect(0, 0, width, 32, 8).fill(0x334455);
+      g.x = btn.x;
       g.eventMode = 'static';
       g.cursor = 'pointer';
       g.on('pointertap', () => {
@@ -72,8 +76,8 @@ export class BattleScene {
       });
       const t = new Text({ text: btn.label, style: { fill: 0xffffff, fontSize: 14 } });
       t.x = btn.x + 10;
-      t.y = 568;
       this.uiLayer.addChild(g, t);
+      this.actionButtons.push({ box: g, label: t });
     });
 
     this.tileLayer.eventMode = 'static';
@@ -84,6 +88,8 @@ export class BattleScene {
       if (x < 0 || y < 0 || x >= this.state.map.width || y >= this.state.map.height) return;
       this.handleAction({ type: 'SelectTile', x, y });
     });
+
+    this.layoutUI();
   }
 
   private render(): void {
@@ -118,5 +124,13 @@ export class BattleScene {
     const cameraX = this.app.screen.width / 2 - heroCenterX;
     const cameraY = this.app.screen.height / 2 - heroCenterY;
     this.worldLayer.position.set(Math.round(cameraX), Math.round(cameraY));
+  }
+
+  private layoutUI(): void {
+    const buttonY = Math.max(44, this.app.screen.height - 40);
+    this.actionButtons.forEach(({ box, label }) => {
+      box.y = buttonY;
+      label.y = buttonY + 8;
+    });
   }
 }
